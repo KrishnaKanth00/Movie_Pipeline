@@ -158,3 +158,20 @@ jobs:
       - name: Verify backend deployment
         run: |
           kubectl rollout status deployment/backend --timeout=5m
+
+      - name: Debug rollout failure
+        if: failure()
+        run: |
+          echo "=== Pods ==="
+          kubectl get pods -o wide
+          echo "=== Deployment ==="
+          kubectl describe deployment/backend
+          echo "=== ReplicaSets ==="
+          kubectl get rs
+          echo "=== Old/terminating pod details ==="
+          for p in $(kubectl get pods -l app=backend -o name); do
+            echo "--- $p ---"
+            kubectl describe $p | sed -n '/Status:/p;/Containers:/,/Conditions:/p;/Events:/,$p'
+          done
+          echo "=== Recent events ==="
+          kubectl get events --sort-by=.lastTimestamp | tail -40
