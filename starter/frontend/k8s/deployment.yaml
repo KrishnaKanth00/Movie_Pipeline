@@ -6,6 +6,7 @@ metadata:
     app: frontend
 spec:
   replicas: 1
+  progressDeadlineSeconds: 600
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -24,20 +25,19 @@ spec:
         - name: frontend
           image: frontend
           ports:
-            - containerPort: 3000
+            - name: http
+              containerPort: 3000
           readinessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 10
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3
-            failureThreshold: 6
+            failureThreshold: 12
           livenessProbe:
-            httpGet:
-              path: /
-              port: 3000
-            initialDelaySeconds: 20
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 6
