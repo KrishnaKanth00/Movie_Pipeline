@@ -79,6 +79,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Login to Amazon Public ECR
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+            | docker login \
+                --username AWS \
+                --password-stdin public.ecr.aws
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -91,9 +98,16 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           MOVIE_API_URL: ${{ secrets.REACT_APP_MOVIE_API_URL }}
         run: |
-          docker build \
-            --build-arg REACT_APP_MOVIE_API_URL="$MOVIE_API_URL" \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          for attempt in 1 2 3; do
+            docker build \
+              --build-arg REACT_APP_MOVIE_API_URL="$MOVIE_API_URL" \
+              -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" . && exit 0
+
+            echo "Docker build failed (attempt $attempt/3); retrying in 20 seconds..."
+            sleep 20
+          done
+
+          exit 1
 
       - name: Push Docker image to ECR
         env:
