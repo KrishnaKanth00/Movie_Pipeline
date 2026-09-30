@@ -6,11 +6,12 @@ metadata:
     app: frontend
 spec:
   replicas: 2
-  progressDeadlineSeconds: 300
+  progressDeadlineSeconds: 600
+  minReadySeconds: 5
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 25%
+      maxUnavailable: 0
       maxSurge: 1
   selector:
     matchLabels:
@@ -31,14 +32,15 @@ spec:
             httpGet:
               path: /
               port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
             failureThreshold: 30
-            periodSeconds: 10
           readinessProbe:
             httpGet:
               path: /
               port: http
             initialDelaySeconds: 10
-            periodSeconds: 10
+            periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 6
           livenessProbe:
