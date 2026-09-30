@@ -8,6 +8,12 @@ app = Flask(__name__)
 CORS(app)
 app.register_blueprint(movies_api)
 
+
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+
+
 # Start app
 if __name__ == "__main__":
     app.run(
