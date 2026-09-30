@@ -1,6 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - service.yaml
-  - deployment.yaml
+- service.yaml
+- deployment.yaml
 namespace: default
+images:
+- name: backend
+  newTag: 5112f25fd57979f0046ef67b66e4ab17dbd47026
