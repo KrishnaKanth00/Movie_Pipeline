@@ -149,4 +149,16 @@ jobs:
 
       - name: Verify frontend deployment
         run: |
-          kubectl rollout status deployment/frontend --timeout=5m
+          if ! kubectl rollout status deployment/frontend --timeout=10m; then
+            echo "=== Deployment ==="
+            kubectl get deployment frontend -o wide
+            echo "=== ReplicaSets ==="
+            kubectl get rs -l app=frontend -o wide
+            echo "=== Pods ==="
+            kubectl get pods -l app=frontend -o wide
+            echo "=== Pod descriptions ==="
+            kubectl describe pods -l app=frontend
+            echo "=== Recent events ==="
+            kubectl get events --sort-by=.lastTimestamp | tail -n 100
+            exit 1
+          fi
